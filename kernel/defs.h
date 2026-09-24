@@ -98,6 +98,7 @@ void            sleep_prepare(void*);
 void            sleep(void);
 void            userinit(void);
 int             kwait(uint64);
+int             kwait2(unit64, unit64);
 void            wakeup(void*);
 void            yield(void);
 int             either_copyout(int user_dst, uint64 dst, void *src, uint64 len);

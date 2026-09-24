@@ -36,6 +36,22 @@ sys_wait(void)
   return kwait(p);
 }
 
+
+unit64
+sys_wait2(void)
+{
+
+   unit64 childProcessStatus;
+   unit64 rusage;
+
+   argaddr(0, &chilProcessStatus);
+   argaddr (0, &rusage);
+
+   return kwait2(childProcessStatus, rusage);
+
+
+}
+
 uint64
 sys_sbrk(void)
 {

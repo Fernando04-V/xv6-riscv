@@ -89,6 +89,8 @@ struct proc {
   int xstate;           // Exit status to be returned to parent's wait
   int pid;              // Process ID
 
+  int cputime;          //cputtime
+
   // wait_lock must be held when using this:
   struct proc *parent; // Parent process
 
@@ -101,4 +103,5 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
 };

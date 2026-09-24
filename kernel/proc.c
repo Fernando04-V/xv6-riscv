@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "pstat.h"
 
 struct cpu cpus[NCPU];
 
@@ -110,6 +111,7 @@ static struct proc *
 allocproc(void)
 {
   struct proc *p;
+  struct cputime; //NEW
 
   for (p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
@@ -339,7 +341,7 @@ kexit(int status)
     }
   }
 
-  begin_op();
+  begin_op();S
   iput(p->cwd);
   end_op();
   p->cwd = 0;
@@ -417,6 +419,74 @@ kwait(uint64 addr)
     acquire(&wait_lock);
   }
 }
+
+
+//Kwait2
+int
+kwait2(uint64 addr, unit64 resuage)
+{
+  struct proc *pp;
+  int havekids, pid;
+  struct proc *p = myproc();
+
+  acquire(&wait_lock);
+
+  for (;;) {
+    // Scan through table looking for exited children.
+    havekids = 0;
+    for (pp = proc; pp < &proc[NPROC]; pp++) {
+      if (pp->parent == p) {
+        // make sure the child isn't still in exit() or swtch().
+        acquire(&pp->lock);
+
+        havekids = 1;
+        if (pp->state == ZOMBIE) {
+          // Found one.
+          pid = pp->pid;
+          if (addr != 0 &&
+              copyout(p->pagetable, p->sz, addr, (char *)&pp->xstate,
+                      sizeof(pp->xstate)) < 0) {
+            release(&pp->lock);
+            release(&wait_lock);
+            return -1;
+          }
+
+
+          struct rusage usage;
+          usage.cputime = pp->cputime;
+
+          if (reusage != 0 &&
+              copyout(p->pagetable, p->sz, reusage, (char *)&usage,
+                      sizeof(usage)) < 0) {
+            release(&pp->lock);
+            release(&wait_lock);
+            return -1;
+          }
+
+          pp->parent = 0;
+          freeproc(pp);
+          release(&pp->lock);
+          release(&wait_lock);
+          return pid;
+        }
+        release(&pp->lock);
+      }
+    }
+
+    // No point waiting if we don't have any children.
+    if (!havekids || killed(p)) {
+      release(&wait_lock);
+      return -1;
+    }
+
+    // Wait for a child to exit.
+    sleep_prepare(p); //DOC: wait-sleep
+    release(&wait_lock);
+    sleep();
+    acquire(&wait_lock);
+  }
+
+
 
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
