@@ -111,7 +111,6 @@ static struct proc *
 allocproc(void)
 {
   struct proc *p;
-  struct cputime; //NEW
 
   for (p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
@@ -126,6 +125,8 @@ allocproc(void)
 found:
   p->pid = allocpid();
   p->state = USED;
+  p->cputime = 0; //Intializing the field to zero when process is created in allocproc (or found) 
+
 
   // Allocate a trapframe page.
   if ((p->trapframe = (struct trapframe *)kalloc()) == 0) {
