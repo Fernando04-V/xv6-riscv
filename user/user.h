@@ -30,7 +30,7 @@ int uptime(void);
 int sync(void);
 
 //New system call
-int wait2(int*, struct rusage*);
+int wait2(int*, struct rusage *);
 
 // ulib.c
 int stat(const char *, struct stat *);

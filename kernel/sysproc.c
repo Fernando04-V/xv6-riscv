@@ -37,14 +37,14 @@ sys_wait(void)
 }
 
 
-unit64
+uint64
 sys_wait2(void)
 {
 
-   unit64 childProcessStatus;
-   unit64 rusage;
+   uint64 childProcessStatus;
+   uint64 rusage;
 
-   argaddr(0, &chilProcessStatus);
+   argaddr(0, &childProcessStatus);
    argaddr (0, &rusage);
 
    return kwait2(childProcessStatus, rusage);

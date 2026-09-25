@@ -13,10 +13,11 @@ main (int argc, char *argv[])
    }
 
 
+  //Geting the first uptime before parent forking the child
   int start = uptime();
 
 
-  //Creating the parent and child process
+  //Creating the child process
   int pid = fork();
 
 
@@ -31,10 +32,8 @@ main (int argc, char *argv[])
 
   printf("start: %d\n", start);
   printf("end: %d\n", end);
-  printf("Elapsed Time: %d\n", end - start);
+  printf("Elapsed Time: %d ticks\n", end - start);
 
-
-
-   exit(0);
+  exit(0);
 
 }

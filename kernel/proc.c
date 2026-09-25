@@ -341,7 +341,7 @@ kexit(int status)
     }
   }
 
-  begin_op();S
+  begin_op();
   iput(p->cwd);
   end_op();
   p->cwd = 0;
@@ -423,7 +423,7 @@ kwait(uint64 addr)
 
 //Kwait2
 int
-kwait2(uint64 addr, unit64 resuage)
+kwait2(uint64 addr, uint64 rusage)
 {
   struct proc *pp;
   int havekids, pid;
@@ -452,29 +452,33 @@ kwait2(uint64 addr, unit64 resuage)
           }
 
 
-          struct rusage usage;
-          usage.cputime = pp->cputime;
+           //Things for the rusage
+           struct rusage usage;
+           usage.cputime = pp->cputime;
 
-          if (reusage != 0 &&
-              copyout(p->pagetable, p->sz, reusage, (char *)&usage,
-                      sizeof(usage)) < 0) {
-            release(&pp->lock);
-            release(&wait_lock);
-            return -1;
+
+           if (rusage != 0 && copyout(p->pagetable, p->sz, rusage, (char *)&usage,
+             sizeof(usage)) < 0) {
+               release(&pp->lock);
+               release(&wait_lock);
+                return -1;
           }
+
 
           pp->parent = 0;
           freeproc(pp);
           release(&pp->lock);
           release(&wait_lock);
           return pid;
-        }
-        release(&pp->lock);
-      }
-    }
 
+         }
+
+
+         release(&pp->lock);
+        }
+       }
     // No point waiting if we don't have any children.
-    if (!havekids || killed(p)) {
+   if (!havekids || killed(p)) {
       release(&wait_lock);
       return -1;
     }
@@ -485,6 +489,7 @@ kwait2(uint64 addr, unit64 resuage)
     sleep();
     acquire(&wait_lock);
   }
+}
 
 
 
