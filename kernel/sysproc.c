@@ -45,7 +45,7 @@ sys_wait2(void)
    uint64 rusage;
 
    argaddr(0, &childProcessStatus);
-   argaddr (0, &rusage);
+   argaddr(1, &rusage);
 
    return kwait2(childProcessStatus, rusage);
 
