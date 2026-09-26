@@ -8,7 +8,7 @@ main (int argc, char *argv[])
 {
 
   if (argc < 2){
-    printf("None\n");
+    printf("Invalid command. Now exiting\n");
     exit(1);
   }
 
@@ -32,10 +32,10 @@ main (int argc, char *argv[])
   
   int cput = ru.cputime;
   int time_elapsed = end - start;
-  int cpup = (cput / time_elapsed) * 100;
+  int cpup = (cput * 100) / time_elapsed;
 
 
-  printf("Elpased time: %d ticks | CPU time: %d | %d CPU\n", time_elapsed, cput, cpup);
+  printf("Elpased time: %d ticks | CPU time: %d | %d%% CPU\n", time_elapsed, cput, cpup);
 
 
 
