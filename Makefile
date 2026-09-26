@@ -152,6 +152,7 @@ UPROGS=\
 	$U/_sync\
 	$U/_uptime\
         $U/_time1\
+        $U/_time\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
