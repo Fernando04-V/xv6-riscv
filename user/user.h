@@ -32,6 +32,10 @@ int sync(void);
 //New system call
 int wait2(int *, struct rusage *);
 
+
+//PA2 Additons
+itn getprocs(struct pstat*);
+
 // ulib.c
 int stat(const char *, struct stat *);
 char *strcpy(char *, const char *);

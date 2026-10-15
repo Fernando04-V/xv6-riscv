@@ -424,7 +424,7 @@ kwait(uint64 addr)
 
 //Kwait2
 int
-kwait2(uint64 addr, uint64 rusage)
+wait2(uint64 addr, uint64 rusage)
 {
   struct proc *pp;
   int havekids, pid;
