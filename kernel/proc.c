@@ -744,6 +744,38 @@ either_copyin(void *dst, int user_src, uint64 src, uint64 len)
   }
 }
 
+
+//PA2 Additions
+int
+getprocs(uint64 addr)
+{
+ struct proc *p;
+ struct pstat info;
+ int count = 0;
+ for(p = proc; p < &proc[NPROC]; p++){
+ acquire(&wait_lock); // xv6 lock order: wait_lock before p->lock
+ acquire(&p->lock);
+ if(p->state == UNUSED){
+ release(&p->lock);
+ release(&wait_lock);
+ continue;
+ }
+ info.pid = p->pid;
+ info.state = p->state;
+ info.size = p->sz;
+ info.ppid = p->parent ? p->parent->pid : 0;
+ safestrcpy(info.name, p->name, sizeof(info.name));
+ release(&p->lock);
+ release(&wait_lock);
+ if(copyout(myproc()->pagetable, myproc()->sz, addr + count * sizeof(info),
+ (char *)&info, sizeof(info)) < 0)
+ return -1;
+ count++;
+ }
+ return count;
+}
+
+
 // Print a process listing to console.  For debugging.
 // Runs when user types ^P on console.
 // No lock to avoid wedging a stuck machine further.

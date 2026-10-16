@@ -2,6 +2,9 @@
 
 struct stat;
 
+//PA2 Additions
+struct pstat;
+
 //New struct
 struct rusage;
 
@@ -34,7 +37,7 @@ int wait2(int *, struct rusage *);
 
 
 //PA2 Additons
-itn getprocs(struct pstat*);
+int getprocs(struct pstat*);
 
 // ulib.c
 int stat(const char *, struct stat *);
