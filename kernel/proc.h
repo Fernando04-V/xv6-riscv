@@ -94,7 +94,7 @@ struct proc {
 
   //PA2 Additions
   int priority;         //Priority field
-
+   uint readytime;      //Keeping track of the  last time a process became RUNNABLE
 
   int cputime;          //cputime
 

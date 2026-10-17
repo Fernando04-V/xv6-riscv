@@ -7,6 +7,8 @@
 #include "defs.h"
 #include "pstat.h"
 
+extern uint ticks; 
+
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
@@ -230,6 +232,7 @@ userinit(void)
   p->cwd = namei("/");
 
   p->state = RUNNABLE;
+  p->readytime = ticks;
 
   release(&p->lock);
 }
@@ -305,6 +308,7 @@ kfork(void)
 
   acquire(&np->lock);
   np->state = RUNNABLE;
+  np->readytime = ticks;
   release(&np->lock);
 
   return pid;
@@ -528,6 +532,7 @@ scheduler(void)
         // to release its lock and then reacquire it
         // before jumping back to us.
         p->state = RUNNING;
+        p->readytime = ticks; //PA2T3 Addition
         c->proc = p;
         swtch(&c->context, &p->context);
 
@@ -582,6 +587,7 @@ yield(void)
   struct proc *p = myproc();
   acquire(&p->lock);
   p->state = RUNNABLE;
+  p->readytime = ticks;
   sched();
   release(&p->lock);
 }
@@ -668,6 +674,7 @@ wakeup(void *chan)
       // go to sleep, also set it back to RUNNING.
       if (p->state == SLEEPING) {
         p->state = RUNNABLE;
+        p->readytime = ticks;
       }
     }
     release(&p->lock);
@@ -689,6 +696,7 @@ kkill(int pid)
       if (p->state == SLEEPING) {
         // Wake process from sleep().
         p->state = RUNNABLE;
+        p->readytime = ticks;
       }
       release(&p->lock);
       return 0;
@@ -769,6 +777,7 @@ getprocs(uint64 addr)
  info.ppid = p->parent ? p->parent->pid : 0;
 
  info.priority = p->priority;
+ info.readytime = p->readytime;
 
  safestrcpy(info.name, p->name, sizeof(info.name));
  release(&p->lock);
