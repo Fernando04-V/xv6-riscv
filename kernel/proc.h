@@ -92,6 +92,10 @@ struct proc {
   int xstate;           // Exit status to be returned to parent's wait
   int pid;              // Process ID
 
+  //PA2 Additions
+  int priority;         //Priority field
+
+
   int cputime;          //cputime
 
   // wait_lock must be held when using this:

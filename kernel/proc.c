@@ -112,6 +112,7 @@ allocproc(void)
 {
   struct proc *p;
 
+
   for (p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
     if (p->state == UNUSED) {
@@ -126,7 +127,7 @@ found:
   p->pid = allocpid();
   p->state = USED;
   p->cputime = 0; //Intializing the field to zero when process is created in allocproc (or found) 
-
+  p->priority = 0;
 
   // Allocate a trapframe page.
   if ((p->trapframe = (struct trapframe *)kalloc()) == 0) {
@@ -277,6 +278,8 @@ kfork(void)
     return -1;
   }
   np->sz = p->sz;
+
+  np->priority = p->priority;
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
@@ -764,6 +767,9 @@ getprocs(uint64 addr)
  info.state = p->state;
  info.size = p->sz;
  info.ppid = p->parent ? p->parent->pid : 0;
+
+ info.priority = p->priority;
+
  safestrcpy(info.name, p->name, sizeof(info.name));
  release(&p->lock);
  release(&wait_lock);

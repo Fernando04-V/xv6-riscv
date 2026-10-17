@@ -7,6 +7,34 @@
 #include "proc.h"
 #include "vm.h"
 
+//PA2 Additons
+uint64
+sys_getpriority(void)
+{
+ struct proc *p = myproc();
+ int pr;
+ acquire(&p->lock);
+ pr = p->priority;
+ release(&p->lock);
+ return pr;
+}
+
+
+uint64
+sys_setpriority(void)
+{
+ int n;
+ struct proc *p = myproc();
+ argint(0, &n);
+ if(n < 0 || n > 49)
+ return -1;
+ acquire(&p->lock);
+ p->priority = n;
+ release(&p->lock);
+ return 0;
+}
+
+
 uint64
 sys_exit(void)
 {

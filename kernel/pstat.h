@@ -16,6 +16,8 @@ struct pstat {
   uint64 size;
   int ppid;
   char name[16];
+
+  int priority;
 };
 
 

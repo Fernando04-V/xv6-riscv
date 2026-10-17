@@ -38,6 +38,9 @@ int wait2(int *, struct rusage *);
 
 //PA2 Additons
 int getprocs(struct pstat*);
+int getpriority(void);
+int setpriority(int);
+
 
 // ulib.c
 int stat(const char *, struct stat *);
