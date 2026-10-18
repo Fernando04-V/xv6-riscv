@@ -500,7 +500,6 @@ wait2(uint64 addr, uint64 rusage)
 }
 
 
-
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -508,50 +507,95 @@ wait2(uint64 addr, uint64 rusage)
 //  - swtch to start running that process.
 //  - eventually that process transfers control
 //    via swtch back to the scheduler.
+
+#if SCHEDPOLICY == RR
+// Original xv6 round-robin scheduler.
 void
 scheduler(void)
 {
-  struct proc *p;
-  struct cpu *c = mycpu();
-
-  c->proc = 0;
-  for (;;) {
-    // The most recent process to run may have had interrupts
-    // turned off; enable them to avoid a deadlock if all
-    // processes are waiting. Then turn them back off
-    // to avoid a possible race between an interrupt
-    // and wfi.
-    intr_on();
-    intr_off();
-
-    int found = 0;
-    for (p = proc; p < &proc[NPROC]; p++) {
-      acquire(&p->lock);
-      if (p->state == RUNNABLE) {
-        // Switch to chosen process.  It is the process's job
-        // to release its lock and then reacquire it
-        // before jumping back to us.
-        p->state = RUNNING;
-        p->readytime = ticks; //PA2T3 Addition
-        c->proc = p;
-        swtch(&c->context, &p->context);
-
-        // Don't re-enable interrupts on release.
-        mycpu()->intena = 0;
-
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
-        c->proc = 0;
-        found = 1;
-      }
-      release(&p->lock);
-    }
-    if (found == 0) {
-      // nothing to run; stop running on this core until an interrupt.
-      asm volatile("wfi");
-    }
-  }
+ struct proc *p;
+ struct cpu *c = mycpu();
+ c->proc = 0;
+ for(;;){
+// The most recent process to run may have had interrupts
+// turned off; enable them to avoid a deadlock if all
+// processes are waiting. Then turn them back off
+// to avoid a possible race between an interrupt
+// and wfi.
+ intr_on();
+ intr_off();
+ int found = 0;
+ for(p = proc; p < &proc[NPROC]; p++){
+ acquire(&p->lock);
+ if(p->state == RUNNABLE){
+// Switch to chosen process. It is the process's job
+// to release its lock and then reacquire it
+// before jumping back to us.
+ p->state = RUNNING;
+ c->proc = p;
+ swtch(&c->context, &p->context);
+// Don't re-enable interrupts on release.
+ mycpu()->intena = 0;
+// Process is done running for now.
+// It should have changed its p->state before coming back.
+ c->proc = 0;
+ found = 1;
+ }
+ release(&p->lock);
+ }
+ if(found == 0){
+ // nothing to run; stop running on this core until an interrupt.
+ asm volatile("wfi");
+ }
+ }
+ }
+#elif SCHEDPOLICY == PRIORITY
+// Priority used by the scheduler. Caller holds p->lock.
+// Task 5 will add aging here.
+static int
+effpriority(struct proc *p)
+{
+return p->priority;
 }
+// Priority scheduler: scan the whole table and run the RUNNABLE
+// process with the highest priority. Ties go to the process that
+// has been ready the longest (smallest readytime).
+void
+scheduler(void)
+{
+   struct proc *p;
+   struct proc *best;
+   struct cpu *c = mycpu();
+   c->proc = 0;
+   for(;;){
+     intr_on();
+     intr_off();
+     best = 0;
+     for(p = proc; p < &proc[NPROC]; p++){
+        acquire(&p->lock);
+        if(p->state == RUNNABLE && (best == 0 || effpriority(p) > effpriority(best) || (effpriority(p) == effpriority(best) && p->readytime < best->readytime))){
+           if(best)
+             release(&best->lock); // drop the old candidate
+           best = p; // keep p->lock held
+           continue;
+       }
+       release(&p->lock);
+       }
+if(best){
+best->state = RUNNING;
+c->proc = best;
+swtch(&c->context, &best->context);
+// Don't re-enable interrupts on release.
+mycpu()->intena = 0;
+c->proc = 0;
+release(&best->lock);
+} else {
+// nothing to run; stop running on this core until an interrupt.
+asm volatile("wfi");
+}
+}
+}
+#endif
 
 // Switch to scheduler.  Must hold only p->lock
 // and have changed proc->state. Saves and restores

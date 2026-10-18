@@ -157,6 +157,8 @@ UPROGS=\
         $U/_sleep\
         $U/_ps\
         $U/_prioritytest\
+        $U/_schedtest\
+        $U/_pexec\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
