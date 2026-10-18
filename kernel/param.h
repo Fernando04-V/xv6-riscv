@@ -17,3 +17,7 @@
 #define RR          0
 #define PRIORITY    1
 #define SCHEDPOLICY PRIORITY
+
+#define AGING       1
+#define MAXEFFPRIORITY 99
+#define AGEINTERVAL 1

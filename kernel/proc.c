@@ -555,7 +555,12 @@ scheduler(void)
 static int
 effpriority(struct proc *p)
 {
+#if AGING
+  int e = p->priority + (int)(ticks - p->readytime) / AGEINTERVAL;
+  return e > MAXEFFPRIORITY ? MAXEFFPRIORITY : e;
+#else
 return p->priority;
+#endif
 }
 // Priority scheduler: scan the whole table and run the RUNNABLE
 // process with the highest priority. Ties go to the process that
